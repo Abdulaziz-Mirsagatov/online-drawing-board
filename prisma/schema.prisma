@@ -11,11 +11,15 @@ model Board {
   id       String    @id @default(auto()) @map("_id") @db.ObjectId
   title    String
   img      String?
-  lines    Line[]
+  lines    Line[]  
 }
 
 model Line {
   id       String    @id @default(auto()) @map("_id") @db.ObjectId
   board    Board     @relation(fields: [boardId], references: [id])
   boardId  String    @db.ObjectId
+  strokeWidth Int
+  stroke   String
+  tool     String
+  points   Int[]
 }

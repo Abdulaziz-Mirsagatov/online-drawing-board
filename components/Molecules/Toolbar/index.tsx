@@ -3,82 +3,65 @@
 import ToolbarButton from "@/components/Atoms/Button/Toolbar";
 import { ToolbarProps } from "./types";
 import { TOOLS } from "@/constants";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-import { Icon } from "@iconify/react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { selectTool, setTool } from "@/store/features/board/boardSlice";
+import useOutsideClick from "@/hooks/useOutsideClick";
+import ShapePickerInput from "@/components/Atoms/Input/ShapePicker";
+import ColorPickerInput from "@/components/Atoms/Input/ColorPicker";
 
-const Toolbar = ({
-  selectedTool,
-  setSelectedTool,
-  selectedColor,
-  setSelectedColor,
-  selectedShape,
-  setSelectedShape,
-  selectedStrokeWidth,
-  setSelectedStrokeWidth,
-}: ToolbarProps) => {
+const Toolbar = ({}: ToolbarProps) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isShapePickerOpen, setIsShapePickerOpen] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const color = e.target.value;
-    setSelectedColor(color);
-  };
+  const colorPickerRef = useRef<HTMLDivElement>(null);
+  const shapePickerRef = useRef<HTMLDivElement>(null);
+  useOutsideClick(colorPickerRef, () => setIsColorPickerOpen(false));
+  useOutsideClick(shapePickerRef, () => setIsShapePickerOpen(false));
+
+  const dispatch = useAppDispatch();
+
+  const tool = useAppSelector((state) => selectTool(state));
 
   return (
     <nav className="grid gap-4 p-4 bg-accent rounded-3xl shadow-2xl">
       <ToolbarButton
-        selected={selectedTool === TOOLS.PEN}
-        onClick={() => setSelectedTool(TOOLS.PEN)}
+        selected={tool === TOOLS.PEN}
+        onClick={() => dispatch(setTool(TOOLS.PEN))}
         icon="solar:pen-bold"
       />
+
       <ToolbarButton
-        selected={selectedTool === TOOLS.ERASER}
-        onClick={() => setSelectedTool(TOOLS.ERASER)}
+        selected={tool === TOOLS.ERASER}
+        onClick={() => dispatch(setTool(TOOLS.ERASER))}
         icon="solar:eraser-bold"
       />
-      <div className="relative">
+
+      <div className="relative" ref={colorPickerRef}>
         <ToolbarButton
           selected={false}
           onClick={() => setIsColorPickerOpen((prev) => !prev)}
           icon="fluent:color-20-filled"
         />
-        {isColorPickerOpen && (
-          <div className="absolute top-1/2 -translate-y-1/2 left-20 text-center rounded-full overflow-hidden">
-            <input
-              type="color"
-              value={selectedColor}
-              onChange={handleChange}
-              className="w-12 h-12 rounded-full border-none outline-none cursor-pointer scale-150"
-            />
-          </div>
-        )}
+        {isColorPickerOpen && <ColorPickerInput />}
       </div>
-      <div className="relative">
+
+      <div className="relative" ref={shapePickerRef}>
         <ToolbarButton
-          selected={selectedTool === TOOLS.SHAPE}
+          selected={tool === TOOLS.SHAPE}
           onClick={() => {
             setIsShapePickerOpen((prev) => !prev);
-            setSelectedTool(TOOLS.SHAPE);
+            dispatch(setTool(TOOLS.SHAPE));
           }}
           icon="fluent:shapes-20-filled"
         />
-        {isShapePickerOpen && (
-          <div className="absolute top-1/2 -translate-y-1/2 left-20 text-center rounded-full overflow-hidden flex p-1 items-center bg-accent">
-            {["mdi:circle-outline", "mdi:square-outline"].map((shape, i) => (
-              <div
-                className="hover:bg-light/30 transition-colors rounded-full p-2"
-                key={shape}
-              >
-                <Icon icon={shape} className="text-3xl text-dark" />
-              </div>
-            ))}
-          </div>
-        )}
+        {isShapePickerOpen && <ShapePickerInput />}
       </div>
+
       <ToolbarButton
-        selected={selectedTool === TOOLS.TEXT}
-        onClick={() => setSelectedTool(TOOLS.TEXT)}
+        selected={tool === TOOLS.TEXT}
+        onClick={() => dispatch(setTool(TOOLS.TEXT))}
         icon="solar:text-bold"
       />
     </nav>

@@ -1,3 +1,3 @@
 export interface GetBoardReqSearchParams {
-  id: string;
+  boardId: string;
 }

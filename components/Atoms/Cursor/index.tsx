@@ -1,11 +1,23 @@
+"use client";
+
 import { TOOLS } from "@/constants";
 import { CursorProps } from "./types";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  selectCursorPosition,
+  selectTool,
+} from "@/store/features/board/boardSlice";
 
-const Cursor = ({ selectedTool, active, pos }: CursorProps) => {
+const Cursor = ({ active }: CursorProps) => {
+  const dispatch = useAppDispatch();
+
+  const tool = useAppSelector((state) => selectTool(state));
+  const pos = useAppSelector((state) => selectCursorPosition(state));
+
   let width;
   let height;
   let backgroundColor;
-  switch (selectedTool) {
+  switch (tool) {
     case TOOLS.PEN:
       width = 6;
       height = 6;

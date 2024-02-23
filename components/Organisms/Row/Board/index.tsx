@@ -5,7 +5,12 @@ const BoardRow = ({ boards }: BoardRowProps) => {
   return (
     <div className="flex flex-wrap gap-8 justify-center">
       {boards.map((board) => (
-        <BoardTab key={board.title} title={board.title} image={board.image} />
+        <BoardTab
+          key={board.title}
+          title={board.title}
+          image={board.image}
+          id={board.id}
+        />
       ))}
     </div>
   );

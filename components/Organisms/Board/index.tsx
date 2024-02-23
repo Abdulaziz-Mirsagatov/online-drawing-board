@@ -1,125 +1,88 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { BoardProps, LineConfigCustom } from "./types";
 import { Layer, Line, Stage } from "react-konva";
 import Loading from "@/app/loading";
 import { KonvaEventObject } from "konva/lib/Node";
 import type { Stage as StageType } from "konva/lib/Stage";
-import Toolbar from "@/components/Molecules/Toolbar";
-import { SHAPES, TOOLS } from "@/constants";
-import Cursor from "@/components/Atoms/Cursor";
-import { Icon } from "@iconify/react";
+import { TOOLS } from "@/constants";
 import Konva from "konva";
-import Link from "next/link";
+import { addLine, deleteLine } from "@/actions";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  appendLine,
+  appendNewLine,
+  appendPointToLine,
+  appendPointToNewLine,
+  clearLines,
+  clearNewLines,
+  selectColor,
+  selectLines,
+  selectNewLines,
+  selectStrokeWidth,
+  selectTool,
+} from "@/store/features/board/boardSlice";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
+import useCursorPosition from "@/hooks/useCursorPosition";
+import BoardControls from "../Controls/Board";
+import useLoadingState from "@/hooks/useLoading";
 
-const Board = ({}: BoardProps) => {
-  const [tool, setTool] = useState(TOOLS.PEN);
-  const [color, setColor] = useState("#df4b26");
-  const [strokeWidth, setStrokeWidth] = useState(5);
-  const [selectedShape, setSelectedShape] = useState(SHAPES.RECTANGLE);
-  const [cursorPosition, setCursorPosition] = useState({ x: -20, y: -20 });
-  const [lineConfigs, setLineConfigs] = useState<LineConfigCustom[]>([]);
-  const [windowWidth, setWindowWidth] = useState(0);
-  const [windowHeight, setWindowHeight] = useState(0);
+const Board = ({ boardId }: BoardProps) => {
+  const { windowWidth, windowHeight } = useWindowDimensions();
   const [loading, setLoading] = useState(true);
+  useCursorPosition();
+  useLoadingState(setLoading);
+
   const isDrawing = useRef(false);
   const stageRef = useRef<StageType>(null);
   const layerRef = useRef<Konva.Layer>(null);
 
-  useEffect(() => {
-    setWindowWidth(window.innerWidth);
-    setWindowHeight(window.innerHeight);
-    document.addEventListener("resize", () => {
-      setWindowWidth(window.innerWidth);
-      setWindowHeight(window.innerHeight);
-    });
+  const dispatch = useAppDispatch();
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
-      setCursorPosition({ x: mouseX, y: mouseY });
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-
-    const stage = stageRef.current;
-
-    // Handling mouse wheel events for zooming
-    const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
-      e.evt.preventDefault();
-      if (!stage) return;
-
-      const scaleBy = 1.1;
-      const oldScale = stage.scaleX();
-
-      const newScale =
-        e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
-
-      // Limiting zoom to a reasonable range
-      const minScale = 0.1;
-      const maxScale = 3;
-      const scale = Math.max(minScale, Math.min(maxScale, newScale));
-
-      stage.scaleX(scale);
-      stage.scaleY(scale);
-
-      // Updating the stage position to keep the zoom centered around the mouse position
-      const pointer = stage.getPointerPosition();
-      if (!pointer) return;
-      const newPos = {
-        x: pointer.x - (pointer.x - stage.x()) * (scale / oldScale),
-        y: pointer.y - (pointer.y - stage.y()) * (scale / oldScale),
-      };
-
-      stage.position(newPos);
-      stage.batchDraw();
-    };
-
-    // if (stage) stage.on("wheel", handleWheel);
-
-    setLoading(false);
-
-    return () => {
-      document.removeEventListener("resize", () => {
-        setWindowWidth(window.innerWidth);
-        setWindowHeight(window.innerHeight);
-      });
-      if (stage) stage.off("wheel", handleWheel);
-      document.removeEventListener("mousemove", handleMouseMove);
-    };
-  });
+  const lines = useAppSelector((state) => selectLines(state));
+  const newLines = useAppSelector((state) => selectNewLines(state));
+  const tool = useAppSelector((state) => selectTool(state));
+  const color = useAppSelector((state) => selectColor(state));
+  const strokeWidth = useAppSelector((state) => selectStrokeWidth(state));
 
   const handleMouseDown = (e: KonvaEventObject<MouseEvent>) => {
     isDrawing.current = true;
     const stage = e.target.getStage();
     const pos = stage?.getPointerPosition();
     if (!pos) return;
+
     const newLineConfig: LineConfigCustom = {
       points: [pos.x, pos.y],
       tool,
       strokeWidth: tool === TOOLS.ERASER ? 30 : strokeWidth,
+      stroke: color,
     };
-    setLineConfigs((prev) => [...prev, newLineConfig]);
+    dispatch(appendLine(newLineConfig)); // here to show the process of drawing the line
+    dispatch(appendNewLine(newLineConfig));
   };
 
   const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
+    // no drawing - skipping
+    if (!isDrawing.current) return;
+
     const stage = e.target.getStage();
     const point = stage?.getPointerPosition();
     if (!point) return;
 
-    // no drawing - skipping
-    if (!isDrawing.current) return;
-
-    setLineConfigs((lineConfigs) => {
-      const lastLineConfig = lineConfigs[lineConfigs.length - 1];
-      lastLineConfig.points = lastLineConfig.points.concat([point.x, point.y]);
-      return lineConfigs.concat();
-    });
+    dispatch(appendPointToLine([point.x, point.y]));
+    dispatch(appendPointToNewLine([point.x, point.y]));
   };
 
   const handleMouseUp = () => {
     isDrawing.current = false;
+
+    const addLinePromises = newLines.map((line) => {
+      return addLine(boardId, line);
+    });
+    Promise.allSettled(addLinePromises);
+
+    dispatch(clearNewLines());
   };
 
   const handleClearStage = () => {
@@ -128,6 +91,13 @@ const Board = ({}: BoardProps) => {
       // Remove all children (shapes) from the layer
       layer.destroyChildren();
       layer.batchDraw();
+
+      const deleteLinePromises = lines.map((line) =>
+        deleteLine(line.id as string)
+      );
+      Promise.allSettled(deleteLinePromises);
+
+      dispatch(clearLines());
     }
   };
 
@@ -146,53 +116,27 @@ const Board = ({}: BoardProps) => {
         className="selection-none"
       >
         <Layer ref={layerRef}>
-          {lineConfigs.map((lineConfig, i) => (
+          {lines.map((line, i) => (
             <Line
               key={i}
-              points={lineConfig.points}
-              stroke={color}
-              strokeWidth={lineConfig.strokeWidth}
+              points={line.points}
+              stroke={line.stroke}
+              strokeWidth={line.strokeWidth}
               tension={0.5}
               lineCap="round"
               lineJoin="round"
               globalCompositeOperation={
-                lineConfig.tool === "eraser" ? "destination-out" : "source-over"
+                line.tool === "eraser" ? "destination-out" : "source-over"
               }
             />
           ))}
         </Layer>
       </Stage>
-      <div className="absolute top-1/2 left-5 -translate-y-1/2">
-        <Toolbar
-          selectedTool={tool}
-          setSelectedTool={setTool}
-          selectedColor={color}
-          setSelectedColor={setColor}
-          selectedShape={selectedShape}
-          setSelectedShape={setSelectedShape}
-          selectedStrokeWidth={strokeWidth}
-          setSelectedStrokeWidth={setStrokeWidth}
-        />
-      </div>
-      <Cursor
-        pos={cursorPosition}
+
+      <BoardControls
         active={isDrawing.current}
-        selectedTool={tool}
+        handleClear={handleClearStage}
       />
-      <div className="absolute top-5 right-5 flex gap-4 items-center">
-        <button
-          className="py-2 px-4 font-bold text-xl bg-accent cursor-pointer rounded-2xl shadow-2xl"
-          onClick={handleClearStage}
-        >
-          Clear
-        </button>
-        <Link
-          href="/"
-          className="hover:bg-accent transition-colors rounded-full p-2"
-        >
-          <Icon icon="mdi:home" className="text-3xl" />
-        </Link>
-      </div>
     </div>
   );
 };
