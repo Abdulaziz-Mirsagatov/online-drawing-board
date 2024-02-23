@@ -1,16 +1,11 @@
-import Board from "@/components/Molecules/Board";
+import BoardTab from "@/components/Molecules/Tab/Board";
 import { BoardRowProps } from "./types";
 
 const BoardRow = ({ boards }: BoardRowProps) => {
   return (
     <div className="flex flex-wrap gap-8 justify-center">
       {boards.map((board) => (
-        <Board
-          key={board.title}
-          title={board.title}
-          image={board.image}
-          link={board.link}
-        />
+        <BoardTab key={board.title} title={board.title} image={board.image} />
       ))}
     </div>
   );

@@ -1,6 +1,8 @@
-export interface RegularButtonProps {
+import React from "react";
+
+export interface RegularButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   text: string;
   icon?: string;
   size?: string;
-  props?: React.HTMLAttributes<HTMLButtonElement>;
 }

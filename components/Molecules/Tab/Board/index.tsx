@@ -1,13 +1,13 @@
 import Image from "next/image";
 import board from "@/public/board.jpg";
-import { BoardProps } from "./types";
 import Link from "next/link";
+import { BoardTabProps } from "./types";
 
-const Board = ({ title, image, link }: BoardProps) => {
+const BoardTab = ({ title, image, id }: BoardTabProps) => {
   return (
     <div className="w-96 p-4 rounded-xl grid gap-2 bg-accent">
       <div className="w-full overflow-hidden">
-        <Link href={link}>
+        <Link href={`/${id}`}>
           <Image
             src={board}
             alt="board"
@@ -28,4 +28,4 @@ const Board = ({ title, image, link }: BoardProps) => {
   );
 };
 
-export default Board;
+export default BoardTab;

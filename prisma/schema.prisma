@@ -1,0 +1,21 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Board {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  title    String
+  img      String?
+  lines    Line[]
+}
+
+model Line {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  board    Board     @relation(fields: [boardId], references: [id])
+  boardId  String    @db.ObjectId
+}
