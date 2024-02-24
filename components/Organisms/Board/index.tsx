@@ -2,32 +2,50 @@
 
 import { useEffect, useRef, useState } from "react";
 import { BoardProps, LineConfigCustom } from "./types";
-import { Layer, Line, Stage } from "react-konva";
+import { Layer, Line, Rect, Stage } from "react-konva";
 import Loading from "@/app/loading";
 import { KonvaEventObject } from "konva/lib/Node";
 import type { Stage as StageType } from "konva/lib/Stage";
-import { CHANNELS, TOOLS } from "@/constants";
+import { CHANNELS, SHAPES, TOOLS } from "@/constants";
 import Konva from "konva";
-import { addLine, deleteLines } from "@/actions";
+import {
+  addLine,
+  addRectangle,
+  deleteLines,
+  deleteRectangles,
+} from "@/actions";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   appendLine,
   appendNewLine,
+  appendNewRectangle,
   appendPointToLine,
   appendPointToNewLine,
+  appendRectangle,
   clearLines,
   clearNewLines,
+  clearNewRectangles,
+  clearRectangles,
   selectColor,
   selectLines,
   selectNewLines,
+  selectNewRectangles,
+  selectRectangles,
+  selectShape,
   selectStrokeWidth,
   selectTool,
+  setLastNewRectangleHeight,
+  setLastNewRectangleWidth,
+  setLastRectangleHeight,
+  setLastRectangleWidth,
 } from "@/store/features/board/boardSlice";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import BoardControls from "../Controls/Board";
 import useLoadingState from "@/hooks/useLoading";
 import { pusherClient } from "@/pusher/client";
 import useCursorPosition from "@/hooks/useCursorPosition";
+import { RectConfig } from "konva/lib/shapes/Rect";
+import { CircleConfig } from "konva/lib/shapes/Circle";
 
 const Board = ({ boardId, title }: BoardProps) => {
   const { windowWidth, windowHeight } = useWindowDimensions();
@@ -46,6 +64,9 @@ const Board = ({ boardId, title }: BoardProps) => {
   const tool = useAppSelector((state) => selectTool(state));
   const color = useAppSelector((state) => selectColor(state));
   const strokeWidth = useAppSelector((state) => selectStrokeWidth(state));
+  const shape = useAppSelector((state) => selectShape(state));
+  const rectangles = useAppSelector((state) => selectRectangles(state));
+  const newRectangles = useAppSelector((state) => selectNewRectangles(state));
 
   useEffect(() => {
     // subscribe the current room to listen for pusher events.
@@ -57,8 +78,12 @@ const Board = ({ boardId, title }: BoardProps) => {
     pusherClient.bind(CHANNELS.LINE_DRAWING, (line: LineConfigCustom) => {
       dispatch(appendLine(line));
     });
+    pusherClient.bind(CHANNELS.RECTANGLE_DRAWING, (rect: RectConfig) => {
+      dispatch(appendRectangle(rect));
+    });
     pusherClient.bind(CHANNELS.BOARD_CLEARED, (_: any) => {
       dispatch(clearLines());
+      dispatch(clearRectangles());
     });
 
     // unsubscribe on component unmount.
@@ -68,19 +93,42 @@ const Board = ({ boardId, title }: BoardProps) => {
   });
 
   const handleMouseDown = (e: KonvaEventObject<MouseEvent>) => {
-    isDrawing.current = true;
     const stage = e.target.getStage();
     const pos = stage?.getPointerPosition();
     if (!pos) return;
 
-    const newLineConfig: LineConfigCustom = {
-      points: [pos.x, pos.y],
-      tool,
-      strokeWidth: tool === TOOLS.ERASER ? 30 : strokeWidth,
-      stroke: color,
-    };
-    dispatch(appendLine(newLineConfig)); // here to show the process of drawing the line
-    dispatch(appendNewLine(newLineConfig));
+    isDrawing.current = true;
+
+    if (tool === TOOLS.SHAPE) {
+      if (shape === SHAPES.RECTANGLE) {
+        const newRectangleConfig: RectConfig = {
+          x: pos.x,
+          y: pos.y,
+          width: 0,
+          height: 0,
+          color,
+        };
+        dispatch(appendRectangle(newRectangleConfig));
+        dispatch(appendNewRectangle(newRectangleConfig));
+      } else if (shape === SHAPES.CIRCLE) {
+        const newCircleConfig: CircleConfig = {
+          x: pos.x,
+          y: pos.y,
+          width: 0,
+          height: 0,
+          color,
+        };
+      }
+    } else {
+      const newLineConfig: LineConfigCustom = {
+        points: [pos.x, pos.y],
+        tool,
+        strokeWidth: tool === TOOLS.ERASER ? 30 : strokeWidth,
+        stroke: color,
+      };
+      dispatch(appendLine(newLineConfig)); // here to show the process of drawing the line
+      dispatch(appendNewLine(newLineConfig));
+    }
   };
 
   const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
@@ -91,8 +139,26 @@ const Board = ({ boardId, title }: BoardProps) => {
     const point = stage?.getPointerPosition();
     if (!point) return;
 
-    dispatch(appendPointToLine([point.x, point.y]));
-    dispatch(appendPointToNewLine([point.x, point.y]));
+    if (tool === TOOLS.SHAPE) {
+      if (shape === SHAPES.RECTANGLE) {
+        // update rectangle width and height
+        const initialX = rectangles[rectangles.length - 1].x;
+        const initialY = rectangles[rectangles.length - 1].y;
+
+        if (initialX === undefined || initialY === undefined) return;
+
+        const newWidth = point.x - initialX;
+        const newHeight = point.y - initialY;
+
+        dispatch(setLastRectangleWidth(newWidth));
+        dispatch(setLastRectangleHeight(newHeight));
+        dispatch(setLastNewRectangleWidth(newWidth));
+        dispatch(setLastNewRectangleHeight(newHeight));
+      }
+    } else {
+      dispatch(appendPointToLine([point.x, point.y]));
+      dispatch(appendPointToNewLine([point.x, point.y]));
+    }
   };
 
   const handleMouseUp = () => {
@@ -103,7 +169,13 @@ const Board = ({ boardId, title }: BoardProps) => {
     });
     Promise.allSettled(addLinePromises);
 
+    const addRectanglePromises = newRectangles.map((rect) => {
+      return addRectangle(boardId, rect);
+    });
+    Promise.allSettled(addRectanglePromises);
+
     dispatch(clearNewLines());
+    dispatch(clearNewRectangles());
   };
 
   const handleClearStage = async () => {
@@ -111,9 +183,11 @@ const Board = ({ boardId, title }: BoardProps) => {
     if (layer) {
       // Remove all children (shapes) from the layer
       deleteLines(boardId, lines);
+      deleteRectangles(boardId, rectangles);
       layer.destroyChildren();
       layer.batchDraw();
       dispatch(clearLines());
+      dispatch(clearRectangles());
     }
   };
 
@@ -128,7 +202,7 @@ const Board = ({ boardId, title }: BoardProps) => {
         onMousemove={handleMouseMove}
         onMouseup={handleMouseUp}
         ref={stageRef}
-        style={{ cursor: "none" }}
+        style={{ cursor: tool === TOOLS.SHAPE ? "crosshair" : "none" }}
         className="selection-none"
       >
         <Layer ref={layerRef}>
@@ -144,6 +218,16 @@ const Board = ({ boardId, title }: BoardProps) => {
               globalCompositeOperation={
                 line.tool === "eraser" ? "destination-out" : "source-over"
               }
+            />
+          ))}
+          {rectangles.map((rect, i) => (
+            <Rect
+              key={i}
+              x={rect.x}
+              y={rect.y}
+              width={rect.width}
+              height={rect.height}
+              stroke={rect.color}
             />
           ))}
         </Layer>

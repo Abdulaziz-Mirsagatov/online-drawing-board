@@ -43,3 +43,21 @@ export const getLines = async (
 
   return res.json();
 };
+
+export const getRectangles = async (
+  boardId: string
+): Promise<LineConfigCustom[]> => {
+  const res = await fetch(
+    `${process.env.API_URL}/api/board/${boardId}/rectangles`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      next: { tags: ["rectangles"] },
+      cache: "no-cache",
+    }
+  );
+
+  return res.json();
+};

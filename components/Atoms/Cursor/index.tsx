@@ -38,6 +38,8 @@ const Cursor = ({ active }: CursorProps) => {
       borderColor = "var(--dark)";
   }
 
+  if (tool === TOOLS.SHAPE) return null;
+
   return (
     <span
       className="fixed cursor-none select-none w-2 h-2 -translate-x-1/2 -translate-y-1/2 border-2 -z-10 rounded-full"

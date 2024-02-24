@@ -1,4 +1,4 @@
-import { getBoard, getLines } from "@/services";
+import { getBoard, getLines, getRectangles } from "@/services";
 import Board from "../../Board";
 import { BoardContainerProps } from "./types";
 import { notFound } from "next/navigation";
@@ -9,10 +9,13 @@ const BoardContainer = async ({ boardId }: BoardContainerProps) => {
   const board = await getBoard(boardId);
   if (!board) return notFound();
 
-  const lines = await getLines(boardId);
+  const [lines, rectangles] = await Promise.all([
+    getLines(boardId),
+    getRectangles(boardId),
+  ]);
 
   return (
-    <StoreProvider lines={lines}>
+    <StoreProvider lines={lines} rectangles={rectangles}>
       <Board boardId={boardId} title={board.title} />
     </StoreProvider>
   );
