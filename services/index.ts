@@ -37,6 +37,7 @@ export const getLines = async (
       "Content-Type": "application/json",
     },
     next: { tags: ["lines"] },
+    cache: "no-cache",
   });
 
   return res.json();
