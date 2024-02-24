@@ -104,7 +104,7 @@ const BoardForm = ({ boards }: BoardFormProps) => {
           onSubmit={handleSubmit}
         >
           <h1 className="text-4xl text-dark font-bold text-center">
-            What's your nickname?
+            What&apos;s your nickname?
           </h1>
           <input
             type="text"
