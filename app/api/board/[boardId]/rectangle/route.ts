@@ -1,5 +1,6 @@
 import { CHANNELS } from "@/constants";
 import { pusherServer } from "@/pusher/server";
+import { Rectangle } from "@/types/env";
 import { PrismaClient } from "@prisma/client";
 import { RectConfig } from "konva/lib/shapes/Rect";
 import { NextRequest, NextResponse } from "next/server";
@@ -17,7 +18,7 @@ export async function POST(
 
   if (!rectangle) return { status: 400, body: { message: "Invalid request" } };
 
-  const newRectangle = await prisma.rectangle.create({
+  const newRectangle: Rectangle = await prisma.rectangle.create({
     data: {
       boardId,
       x: rectangle.x as number,

@@ -1,7 +1,7 @@
 "use server";
 
 import { LineConfigCustom } from "@/components/Organisms/Board/types";
-import { Board } from "@/types/env";
+import { Board, Rectangle } from "@/types/env";
 import { RectConfig } from "konva/lib/shapes/Rect";
 import { revalidateTag } from "next/cache";
 
@@ -86,7 +86,10 @@ export const deleteLines = async (
   return res.json();
 };
 
-export const addRectangle = async (boardId: string, rectangle: RectConfig) => {
+export const addRectangle = async (
+  boardId: string,
+  rectangle: RectConfig
+): Promise<Rectangle> => {
   const response = await fetch(
     `${process.env.API_URL}/api/board/${boardId}/rectangle`,
     {
