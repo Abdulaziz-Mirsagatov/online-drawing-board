@@ -17,31 +17,37 @@ const Cursor = ({ active }: CursorProps) => {
   let width;
   let height;
   let backgroundColor;
+  let borderColor;
   switch (tool) {
     case TOOLS.PEN:
       width = 6;
       height = 6;
-      backgroundColor = "var(--dark)";
+      backgroundColor = active ? "var(--light)" : "var(--dark)";
+      borderColor = "var(--dark)";
       break;
     case TOOLS.ERASER:
       width = 20;
       height = 20;
       backgroundColor = "transparent";
+      borderColor = active ? "var(--light-dark)" : "var(--dark)";
       break;
     default:
       width = 4;
       height = 4;
+      backgroundColor = "var(--dark)";
+      borderColor = "var(--dark)";
   }
 
   return (
     <span
-      className="fixed cursor-none select-none w-2 h-2 -translate-x-1/2 -translate-y-1/2 border-2 border-dark -z-10 rounded-full"
+      className="fixed cursor-none select-none w-2 h-2 -translate-x-1/2 -translate-y-1/2 border-2 -z-10 rounded-full"
       style={{
         left: pos.x,
         top: pos.y,
         width,
         height,
         backgroundColor,
+        borderColor,
       }}
     ></span>
   );

@@ -1,3 +1,5 @@
+"use client";
+
 import { Icon } from "@iconify/react";
 
 const ShapePickerInput = () => {
@@ -8,7 +10,7 @@ const ShapePickerInput = () => {
           className="hover:bg-light/30 transition-colors rounded-full p-2"
           key={shape}
         >
-          <Icon icon={shape} className="text-3xl text-dark" />
+          <Icon icon={shape} className="text-3xl text-dark cursor-pointer" />
         </div>
       ))}
     </div>
