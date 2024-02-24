@@ -2,6 +2,7 @@
 
 import { LineConfigCustom } from "@/components/Organisms/Board/types";
 import { Board } from "@/types/env";
+import { RectConfig } from "konva/lib/shapes/Rect";
 import { revalidateTag } from "next/cache";
 
 export const addBoard = async (title: string): Promise<Board> => {
@@ -82,5 +83,40 @@ export const deleteLines = async (
   );
 
   revalidateTag("lines");
+  return res.json();
+};
+
+export const addRectangle = async (boardId: string, rectangle: RectConfig) => {
+  const response = await fetch(
+    `${process.env.API_URL}/api/board/${boardId}/rectangle`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ rectangle }),
+    }
+  );
+
+  revalidateTag("rectangles");
+  return response.json();
+};
+
+export const deleteRectangles = async (
+  boardId: string,
+  rectangles: RectConfig[]
+) => {
+  const res = await fetch(
+    `${process.env.API_URL}/api/board/${boardId}/rectangle/deleteAll`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ rectangles }),
+    }
+  );
+
+  revalidateTag("rectangles");
   return res.json();
 };

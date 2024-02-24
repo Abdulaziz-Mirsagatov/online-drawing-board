@@ -2,6 +2,7 @@ import { LineConfigCustom } from "@/components/Organisms/Board/types";
 import { SHAPES, TOOLS } from "@/constants";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { RectConfig } from "konva/lib/shapes/Rect";
 
 export interface BoardState {
   lines: LineConfigCustom[];
@@ -11,6 +12,8 @@ export interface BoardState {
   strokeWidth: number;
   shape: string;
   cursorPosition: { x: number; y: number };
+  rectangles: RectConfig[];
+  newRectangles: RectConfig[];
 }
 
 const initialState: BoardState = {
@@ -21,6 +24,8 @@ const initialState: BoardState = {
   strokeWidth: 5,
   shape: SHAPES.RECTANGLE,
   cursorPosition: { x: -20, y: -20 },
+  rectangles: [],
+  newRectangles: [],
 };
 
 export const boardSlice = createSlice({
@@ -72,6 +77,35 @@ export const boardSlice = createSlice({
     ) => {
       state.cursorPosition = action.payload;
     },
+    initializeRectangles: (state, action) => {
+      state.rectangles = action.payload;
+    },
+    appendRectangle: (state, action) => {
+      state.rectangles.push(action.payload);
+    },
+    setLastRectangleWidth: (state, action: PayloadAction<number>) => {
+      state.rectangles[state.rectangles.length - 1].width = action.payload;
+    },
+    setLastRectangleHeight: (state, action: PayloadAction<number>) => {
+      state.rectangles[state.rectangles.length - 1].height = action.payload;
+    },
+    clearRectangles: (state) => {
+      state.rectangles = [];
+    },
+    appendNewRectangle: (state, action) => {
+      state.newRectangles.push(action.payload);
+    },
+    setLastNewRectangleWidth: (state, action: PayloadAction<number>) => {
+      state.newRectangles[state.newRectangles.length - 1].width =
+        action.payload;
+    },
+    setLastNewRectangleHeight: (state, action: PayloadAction<number>) => {
+      state.newRectangles[state.newRectangles.length - 1].height =
+        action.payload;
+    },
+    clearNewRectangles: (state) => {
+      state.newRectangles = [];
+    },
   },
 });
 
@@ -89,6 +123,15 @@ export const {
   setStrokeWidth,
   setShape,
   setCursorPosition,
+  initializeRectangles,
+  appendRectangle,
+  setLastRectangleWidth,
+  setLastRectangleHeight,
+  clearRectangles,
+  appendNewRectangle,
+  setLastNewRectangleWidth,
+  setLastNewRectangleHeight,
+  clearNewRectangles,
 } = boardSlice.actions;
 
 export const selectLines = (state: { board: BoardState }) => state.board.lines;
@@ -101,5 +144,9 @@ export const selectStrokeWidth = (state: { board: BoardState }) =>
 export const selectShape = (state: { board: BoardState }) => state.board.shape;
 export const selectCursorPosition = (state: { board: BoardState }) =>
   state.board.cursorPosition;
+export const selectRectangles = (state: { board: BoardState }) =>
+  state.board.rectangles;
+export const selectNewRectangles = (state: { board: BoardState }) =>
+  state.board.newRectangles;
 
 export default boardSlice.reducer;

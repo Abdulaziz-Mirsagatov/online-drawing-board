@@ -12,6 +12,7 @@ model Board {
   title    String
   img      String?
   lines    Line[]  
+  rectangles Rectangle[]
 }
 
 model Line {
@@ -22,4 +23,15 @@ model Line {
   stroke   String
   tool     String
   points   Int[]
+}
+
+model Rectangle {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  board    Board     @relation(fields: [boardId], references: [id])
+  boardId  String    @db.ObjectId
+  x        Int
+  y        Int
+  width    Int
+  height   Int
+  color    String
 }
