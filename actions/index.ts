@@ -2,6 +2,7 @@
 
 import { LineConfigCustom } from "@/components/Organisms/Board/types";
 import { Board, Rectangle } from "@/types/env";
+import { CircleConfig } from "konva/lib/shapes/Circle";
 import { RectConfig } from "konva/lib/shapes/Rect";
 import { revalidateTag } from "next/cache";
 
@@ -121,5 +122,40 @@ export const deleteRectangles = async (
   );
 
   revalidateTag("rectangles");
+  return res.json();
+};
+
+export const addCircle = async (boardId: string, circle: CircleConfig) => {
+  const response = await fetch(
+    `${process.env.API_URL}/api/board/${boardId}/circle`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ circle }),
+    }
+  );
+
+  revalidateTag("circles");
+  return response.json();
+};
+
+export const deleteCircles = async (
+  boardId: string,
+  circles: CircleConfig[]
+) => {
+  const res = await fetch(
+    `${process.env.API_URL}/api/board/${boardId}/circle/deleteAll`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ circles }),
+    }
+  );
+
+  revalidateTag("circles");
   return res.json();
 };

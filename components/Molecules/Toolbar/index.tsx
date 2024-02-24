@@ -70,12 +70,6 @@ const Toolbar = ({}: ToolbarProps) => {
         />
         {isShapePickerOpen && <ShapePickerInput />}
       </div>
-
-      <ToolbarButton
-        selected={tool === TOOLS.TEXT}
-        onClick={() => dispatch(setTool(TOOLS.TEXT))}
-        icon="solar:text-bold"
-      />
     </nav>
   );
 };

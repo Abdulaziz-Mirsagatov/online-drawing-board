@@ -34,7 +34,7 @@ export async function DELETE(
 ) {
   const { boardId: id } = params;
 
-  // find all related lines and delete them
+  // find all related lines, rectangles, and circles and delete them
   const lines = await prisma.line.findMany({
     where: {
       boardId: id,
@@ -42,6 +42,32 @@ export async function DELETE(
   });
   if (lines.length > 0) {
     await prisma.line.deleteMany({
+      where: {
+        boardId: id,
+      },
+    });
+  }
+
+  const rectangles = await prisma.rectangle.findMany({
+    where: {
+      boardId: id,
+    },
+  });
+  if (rectangles.length > 0) {
+    await prisma.rectangle.deleteMany({
+      where: {
+        boardId: id,
+      },
+    });
+  }
+
+  const circles = await prisma.circle.findMany({
+    where: {
+      boardId: id,
+    },
+  });
+  if (circles.length > 0) {
+    await prisma.circle.deleteMany({
       where: {
         boardId: id,
       },
