@@ -29,7 +29,7 @@ import useLoadingState from "@/hooks/useLoading";
 import { pusherClient } from "@/pusher/client";
 import useCursorPosition from "@/hooks/useCursorPosition";
 
-const Board = ({ boardId }: BoardProps) => {
+const Board = ({ boardId, title }: BoardProps) => {
   const { windowWidth, windowHeight } = useWindowDimensions();
   const [loading, setLoading] = useState(true);
   useCursorPosition();
@@ -153,6 +153,13 @@ const Board = ({ boardId }: BoardProps) => {
         active={isDrawing.current}
         handleClear={handleClearStage}
       />
+
+      <h1 className="absolute top-5 left-5 text-dark font-bold text-2xl opacity-50 select-none cursor-none">
+        {sessionStorage.getItem("nickname") || "Anonymous"}
+      </h1>
+      <h1 className="absolute top-12 left-5 text-dark font-bold text-2xl opacity-50 select-none cursor-none">
+        {title}
+      </h1>
     </div>
   );
 };

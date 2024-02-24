@@ -13,7 +13,7 @@ const BoardContainer = async ({ boardId }: BoardContainerProps) => {
 
   return (
     <StoreProvider lines={lines}>
-      <Board boardId={boardId} />
+      <Board boardId={boardId} title={board.title} />
     </StoreProvider>
   );
 };
