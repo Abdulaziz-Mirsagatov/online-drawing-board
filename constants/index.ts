@@ -3,6 +3,7 @@ export enum TOOLS {
   ERASER = "eraser",
   TEXT = "text",
   SHAPE = "shape",
+  HAND = "hand",
 }
 
 export enum SHAPES {

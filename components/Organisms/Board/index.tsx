@@ -24,10 +24,10 @@ import {
   selectTool,
 } from "@/store/features/board/boardSlice";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
-import useCursorPosition from "@/hooks/useCursorPosition";
 import BoardControls from "../Controls/Board";
 import useLoadingState from "@/hooks/useLoading";
 import { pusherClient } from "@/pusher/client";
+import useCursorPosition from "@/hooks/useCursorPosition";
 
 const Board = ({ boardId }: BoardProps) => {
   const { windowWidth, windowHeight } = useWindowDimensions();
@@ -46,8 +46,6 @@ const Board = ({ boardId }: BoardProps) => {
   const tool = useAppSelector((state) => selectTool(state));
   const color = useAppSelector((state) => selectColor(state));
   const strokeWidth = useAppSelector((state) => selectStrokeWidth(state));
-
-  // Pusher.logToConsole = true; // for debugging purposes
 
   useEffect(() => {
     // subscribe the current room to listen for pusher events.
