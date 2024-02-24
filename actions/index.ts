@@ -4,7 +4,7 @@ import { LineConfigCustom } from "@/components/Organisms/Board/types";
 import { Board } from "@/types/env";
 import { revalidateTag } from "next/cache";
 
-export const addBoard = async (title: string): Promise<Board> => {
+export const addBoard = async (title: string): Promise<Board | null> => {
   try {
     const response = await fetch(`${process.env.API_URL}/api/board`, {
       method: "POST",
