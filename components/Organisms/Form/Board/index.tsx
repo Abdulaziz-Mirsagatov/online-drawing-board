@@ -12,7 +12,9 @@ import { CHANNELS } from "@/constants";
 
 const BoardForm = ({ boards }: BoardFormProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [nickname, setNickname] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,6 +23,14 @@ const BoardForm = ({ boards }: BoardFormProps) => {
     setIsModalOpen(false);
     if (board) router.push(`/${board.id}`);
   };
+
+  useEffect(() => {
+    setNickname(sessionStorage.getItem("nickname") || "");
+    setIsNicknameModalOpen(
+      !sessionStorage.getItem("nickname") ||
+        sessionStorage.getItem("nickname") === ""
+    );
+  }, []);
 
   useEffect(() => {
     // subscribe the current room to listen for pusher events.
@@ -87,7 +97,35 @@ const BoardForm = ({ boards }: BoardFormProps) => {
         </form>
       </RegularModal>
 
-      {/* delete it? */}
+      {/* nickname form */}
+      <RegularModal isOpen={isNicknameModalOpen}>
+        <form
+          className="p-4 bg-light rounded-xl grid gap-8 w-96"
+          onSubmit={handleSubmit}
+        >
+          <h1 className="text-4xl text-dark font-bold text-center">
+            What&apos;s your nickname?
+          </h1>
+          <input
+            type="text"
+            className="input"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            required
+          />
+          <div className="flex justify-center">
+            <RegularButton
+              text="Join"
+              size="text-xl"
+              type="submit"
+              onClick={() => {
+                sessionStorage.setItem("nickname", nickname);
+                setIsNicknameModalOpen(false);
+              }}
+            />
+          </div>
+        </form>
+      </RegularModal>
     </>
   );
 };
