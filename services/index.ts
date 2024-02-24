@@ -10,6 +10,7 @@ export const getBoards = async (): Promise<Board[]> => {
       "Content-Type": "application/json",
     },
     next: { tags: ["boards"] },
+    cache: "no-cache",
   });
 
   return res.json();
