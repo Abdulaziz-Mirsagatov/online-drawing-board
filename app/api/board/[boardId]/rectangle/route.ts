@@ -28,11 +28,6 @@ export async function POST(
       color: rectangle.color,
     },
   });
-  if (!newRectangle)
-    return NextResponse.json(
-      { message: "Failed to create rectangle" },
-      { status: 500 }
-    );
 
   pusherServer.trigger(boardId, CHANNELS.RECTANGLE_DRAWING, newRectangle);
 

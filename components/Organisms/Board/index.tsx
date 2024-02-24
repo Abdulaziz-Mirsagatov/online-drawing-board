@@ -45,6 +45,7 @@ import useLoadingState from "@/hooks/useLoading";
 import { pusherClient } from "@/pusher/client";
 import useCursorPosition from "@/hooks/useCursorPosition";
 import { RectConfig } from "konva/lib/shapes/Rect";
+import { CircleConfig } from "konva/lib/shapes/Circle";
 
 const Board = ({ boardId, title }: BoardProps) => {
   const { windowWidth, windowHeight } = useWindowDimensions();
@@ -109,6 +110,14 @@ const Board = ({ boardId, title }: BoardProps) => {
         };
         dispatch(appendRectangle(newRectangleConfig));
         dispatch(appendNewRectangle(newRectangleConfig));
+      } else if (shape === SHAPES.CIRCLE) {
+        const newCircleConfig: CircleConfig = {
+          x: pos.x,
+          y: pos.y,
+          width: 0,
+          height: 0,
+          color,
+        };
       }
     } else {
       const newLineConfig: LineConfigCustom = {

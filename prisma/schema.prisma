@@ -13,6 +13,7 @@ model Board {
   img      String?
   lines    Line[]  
   rectangles Rectangle[]
+  circles  Circle[]
 }
 
 model Line {
@@ -33,5 +34,15 @@ model Rectangle {
   y        Int
   width    Int
   height   Int
+  color    String
+}
+
+model Circle {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  board    Board     @relation(fields: [boardId], references: [id])
+  boardId  String    @db.ObjectId
+  x        Int
+  y        Int
+  radius   Int
   color    String
 }
