@@ -16,6 +16,8 @@ export enum CHANNELS {
   LINE_DELETION = "line-deletion",
   RECTANGLE_DRAWING = "rectangle-drawing",
   RECTANGLE_DELETION = "rectangle-deletion",
+  CIRCLE_DRAWING = "circle-drawing",
+  CIRCLE_DELETION = "circle-deletion",
   BOARD_CLEARED = "board-cleared",
   BOARD_DELETED = "board-deleted",
   BOARD_CREATED = "board-created",

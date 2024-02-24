@@ -13,3 +13,12 @@ export interface Rectangle {
   height: number;
   color: string;
 }
+
+export interface Circle {
+  id: string;
+  boardId: string;
+  x: number;
+  y: number;
+  radius: number;
+  color: string;
+}

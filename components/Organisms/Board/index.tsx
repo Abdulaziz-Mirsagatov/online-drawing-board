@@ -1,39 +1,49 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { BoardProps, LineConfigCustom } from "./types";
-import { Layer, Line, Rect, Stage } from "react-konva";
+import { Circle, Layer, Line, Rect, Stage } from "react-konva";
 import Loading from "@/app/loading";
 import { KonvaEventObject } from "konva/lib/Node";
 import type { Stage as StageType } from "konva/lib/Stage";
 import { CHANNELS, SHAPES, TOOLS } from "@/constants";
 import Konva from "konva";
 import {
+  addCircle,
   addLine,
   addRectangle,
+  deleteCircles,
   deleteLines,
   deleteRectangles,
 } from "@/actions";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
+  appendCircle,
   appendLine,
+  appendNewCircle,
   appendNewLine,
   appendNewRectangle,
   appendPointToLine,
   appendPointToNewLine,
   appendRectangle,
+  clearCircles,
   clearLines,
+  clearNewCircles,
   clearNewLines,
   clearNewRectangles,
   clearRectangles,
+  selectCircles,
   selectColor,
   selectLines,
+  selectNewCircles,
   selectNewLines,
   selectNewRectangles,
   selectRectangles,
   selectShape,
   selectStrokeWidth,
   selectTool,
+  setLastCircleRadius,
+  setLastNewCircleRadius,
   setLastNewRectangleHeight,
   setLastNewRectangleWidth,
   setLastRectangleHeight,
@@ -67,6 +77,8 @@ const Board = ({ boardId, title }: BoardProps) => {
   const shape = useAppSelector((state) => selectShape(state));
   const rectangles = useAppSelector((state) => selectRectangles(state));
   const newRectangles = useAppSelector((state) => selectNewRectangles(state));
+  const circles = useAppSelector((state) => selectCircles(state));
+  const newCircles = useAppSelector((state) => selectNewCircles(state));
 
   useEffect(() => {
     // subscribe the current room to listen for pusher events.
@@ -81,9 +93,13 @@ const Board = ({ boardId, title }: BoardProps) => {
     pusherClient.bind(CHANNELS.RECTANGLE_DRAWING, (rect: RectConfig) => {
       dispatch(appendRectangle(rect));
     });
+    pusherClient.bind(CHANNELS.CIRCLE_DRAWING, (circle: CircleConfig) => {
+      dispatch(appendCircle(circle));
+    });
     pusherClient.bind(CHANNELS.BOARD_CLEARED, (_: any) => {
       dispatch(clearLines());
       dispatch(clearRectangles());
+      dispatch(clearCircles());
     });
 
     // unsubscribe on component unmount.
@@ -114,10 +130,11 @@ const Board = ({ boardId, title }: BoardProps) => {
         const newCircleConfig: CircleConfig = {
           x: pos.x,
           y: pos.y,
-          width: 0,
-          height: 0,
+          radius: 0,
           color,
         };
+        dispatch(appendCircle(newCircleConfig));
+        dispatch(appendNewCircle(newCircleConfig));
       }
     } else {
       const newLineConfig: LineConfigCustom = {
@@ -154,6 +171,19 @@ const Board = ({ boardId, title }: BoardProps) => {
         dispatch(setLastRectangleHeight(newHeight));
         dispatch(setLastNewRectangleWidth(newWidth));
         dispatch(setLastNewRectangleHeight(newHeight));
+      } else if (shape === SHAPES.CIRCLE) {
+        // update circle radius
+        const initialX = circles[circles.length - 1].x;
+        const initialY = circles[circles.length - 1].y;
+
+        if (initialX === undefined || initialY === undefined) return;
+
+        const newRadius = Math.sqrt(
+          Math.pow(point.x - initialX, 2) + Math.pow(point.y - initialY, 2)
+        );
+
+        dispatch(setLastCircleRadius(newRadius));
+        dispatch(setLastNewCircleRadius(newRadius));
       }
     } else {
       dispatch(appendPointToLine([point.x, point.y]));
@@ -174,8 +204,14 @@ const Board = ({ boardId, title }: BoardProps) => {
     });
     Promise.allSettled(addRectanglePromises);
 
+    const addCirclePromises = newCircles.map((circle) => {
+      return addCircle(boardId, circle);
+    });
+    Promise.allSettled(addCirclePromises);
+
     dispatch(clearNewLines());
     dispatch(clearNewRectangles());
+    dispatch(clearNewCircles());
   };
 
   const handleClearStage = async () => {
@@ -184,10 +220,14 @@ const Board = ({ boardId, title }: BoardProps) => {
       // Remove all children (shapes) from the layer
       deleteLines(boardId, lines);
       deleteRectangles(boardId, rectangles);
+      deleteCircles(boardId, circles);
+
       layer.destroyChildren();
       layer.batchDraw();
+
       dispatch(clearLines());
       dispatch(clearRectangles());
+      dispatch(clearCircles());
     }
   };
 
@@ -228,6 +268,15 @@ const Board = ({ boardId, title }: BoardProps) => {
               width={rect.width}
               height={rect.height}
               stroke={rect.color}
+            />
+          ))}
+          {circles.map((circle, i) => (
+            <Circle
+              key={i}
+              x={circle.x}
+              y={circle.y}
+              radius={circle.radius}
+              stroke={circle.color}
             />
           ))}
         </Layer>

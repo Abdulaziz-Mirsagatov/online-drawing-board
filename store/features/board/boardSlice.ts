@@ -111,6 +111,27 @@ export const boardSlice = createSlice({
     clearNewRectangles: (state) => {
       state.newRectangles = [];
     },
+    initializeCircles: (state, action) => {
+      state.circles = action.payload;
+    },
+    appendCircle: (state, action) => {
+      state.circles.push(action.payload);
+    },
+    setLastCircleRadius: (state, action: PayloadAction<number>) => {
+      state.circles[state.circles.length - 1].radius = action.payload;
+    },
+    clearCircles: (state) => {
+      state.circles = [];
+    },
+    appendNewCircle: (state, action) => {
+      state.newCircles.push(action.payload);
+    },
+    setLastNewCircleRadius: (state, action: PayloadAction<number>) => {
+      state.newCircles[state.newCircles.length - 1].radius = action.payload;
+    },
+    clearNewCircles: (state) => {
+      state.newCircles = [];
+    },
   },
 });
 
@@ -137,6 +158,13 @@ export const {
   setLastNewRectangleWidth,
   setLastNewRectangleHeight,
   clearNewRectangles,
+  initializeCircles,
+  appendCircle,
+  setLastCircleRadius,
+  clearCircles,
+  appendNewCircle,
+  setLastNewCircleRadius,
+  clearNewCircles,
 } = boardSlice.actions;
 
 export const selectLines = (state: { board: BoardState }) => state.board.lines;
@@ -153,5 +181,9 @@ export const selectRectangles = (state: { board: BoardState }) =>
   state.board.rectangles;
 export const selectNewRectangles = (state: { board: BoardState }) =>
   state.board.newRectangles;
+export const selectCircles = (state: { board: BoardState }) =>
+  state.board.circles;
+export const selectNewCircles = (state: { board: BoardState }) =>
+  state.board.newCircles;
 
 export default boardSlice.reducer;
