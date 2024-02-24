@@ -3,7 +3,7 @@ import { BoardRowProps } from "./types";
 
 const BoardRow = ({ boards }: BoardRowProps) => {
   return (
-    <div className="flex flex-wrap gap-8 justify-center">
+    <div className="flex flex-wrap gap-8 px-4">
       {boards.map((board) => (
         <BoardTab
           key={board.title}

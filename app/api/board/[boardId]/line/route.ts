@@ -1,4 +1,6 @@
 import { LineConfigCustom } from "@/components/Organisms/Board/types";
+import { CHANNELS } from "@/constants";
+import { pusherServer } from "@/pusher/server";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -13,7 +15,7 @@ export async function POST(
   const { boardId } = params;
   const { line }: { line: LineConfigCustom } = await req.json();
 
-  const board = await prisma.line.create({
+  const newLine = await prisma.line.create({
     data: {
       boardId,
       stroke: line.stroke as string,
@@ -23,5 +25,7 @@ export async function POST(
     },
   });
 
-  return NextResponse.json(board, { status: 201 });
+  pusherServer.trigger(boardId, CHANNELS.LINE_DRAWING, newLine);
+
+  return NextResponse.json(newLine, { status: 201 });
 }

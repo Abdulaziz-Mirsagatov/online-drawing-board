@@ -2,7 +2,6 @@ import { LineConfigCustom } from "@/components/Organisms/Board/types";
 import { SHAPES, TOOLS } from "@/constants";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { Vector2d } from "konva/lib/types";
 
 export interface BoardState {
   lines: LineConfigCustom[];

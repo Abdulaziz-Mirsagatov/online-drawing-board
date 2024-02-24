@@ -26,10 +26,15 @@ body {
   border-radius: 0.5rem;
   transition: opacity 0.3s ease;
   font-weight: bold;
+}
 
-  &:hover {
-    opacity: 0.8;
-  }
+.button.delete {
+  @apply bg-ruby;
+  @apply text-light;
+}
+
+.button:hover {
+  opacity: 0.8;
 }
 
 .input {
@@ -38,8 +43,8 @@ body {
   border-radius: 0.5rem;
   border: 1px solid var(--dark);
   transition: border-color 0.3s ease;
+}
 
-  &:focus {
-    border-color: var(--accent);
-  }
+.input:hover {
+  border-color: var(--accent);
 }

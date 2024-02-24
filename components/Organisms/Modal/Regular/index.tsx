@@ -2,7 +2,7 @@
 
 import { RegularModalProps } from "./types";
 
-const RegularModal = ({ children, isOpen, onClose }: RegularModalProps) => {
+const RegularModal = ({ children, isOpen }: RegularModalProps) => {
   if (!isOpen) return null;
   return (
     <div className="fixed left-0 top-0 right-0 bottom-0  overflow-hidden flex justify-center items-center z-20">
@@ -11,5 +11,5 @@ const RegularModal = ({ children, isOpen, onClose }: RegularModalProps) => {
     </div>
   );
 };
-    
+
 export default RegularModal;

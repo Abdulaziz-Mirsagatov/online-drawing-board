@@ -17,6 +17,18 @@ export const addBoard = async (title: string): Promise<Board> => {
   return response.json();
 };
 
+export const deleteBoard = async (boardId: string): Promise<void> => {
+  const res = await fetch(`${process.env.API_URL}/api/board/${boardId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  revalidateTag("boards");
+  return res.json();
+};
+
 export const addLine = async (
   boardId: string,
   line: LineConfigCustom
@@ -36,13 +48,38 @@ export const addLine = async (
   return response.json();
 };
 
-export const deleteLine = async (id: string): Promise<void> => {
-  const res = await fetch(`${process.env.API_URL}/api/line/${id}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+export const deleteLine = async (
+  boardId: string,
+  lineId: string
+): Promise<void> => {
+  const res = await fetch(
+    `${process.env.API_URL}/api/board/${boardId}/line/${lineId}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  revalidateTag("lines");
+  return res.json();
+};
+
+export const deleteLines = async (
+  boardId: string,
+  lines: LineConfigCustom[]
+): Promise<void> => {
+  const res = await fetch(
+    `${process.env.API_URL}/api/board/${boardId}/line/deleteAll`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ lines }),
+    }
+  );
 
   revalidateTag("lines");
   return res.json();

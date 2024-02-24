@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GetBoardReqSearchParams } from "./types";
 import { PrismaClient } from "@prisma/client";
+import { pusherServer } from "@/pusher/server";
+import { CHANNELS } from "@/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +24,42 @@ export async function GET(
       { message: "Board not found" },
       { status: 404, headers: { "Content-Type": "application/json" } }
     );
+
+  return NextResponse.json(board, { status: 200 });
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: GetBoardReqSearchParams }
+) {
+  const { boardId: id } = params;
+
+  // find all related lines and delete them
+  const lines = await prisma.line.findMany({
+    where: {
+      boardId: id,
+    },
+  });
+  if (lines.length > 0) {
+    await prisma.line.deleteMany({
+      where: {
+        boardId: id,
+      },
+    });
+  }
+
+  const board = await prisma.board.delete({
+    where: {
+      id,
+    },
+  });
+  if (!board)
+    return NextResponse.json(
+      { message: "Failed to Delete" },
+      { status: 404, headers: { "Content-Type": "application/json" } }
+    );
+
+  pusherServer.trigger("APP", CHANNELS.BOARD_DELETED, board);
 
   return NextResponse.json(board, { status: 200 });
 }

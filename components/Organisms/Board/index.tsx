@@ -1,14 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BoardProps, LineConfigCustom } from "./types";
 import { Layer, Line, Stage } from "react-konva";
 import Loading from "@/app/loading";
 import { KonvaEventObject } from "konva/lib/Node";
 import type { Stage as StageType } from "konva/lib/Stage";
-import { TOOLS } from "@/constants";
+import { CHANNELS, TOOLS } from "@/constants";
 import Konva from "konva";
-import { addLine, deleteLine } from "@/actions";
+import { addLine, deleteLines } from "@/actions";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   appendLine,
@@ -27,6 +27,7 @@ import useWindowDimensions from "@/hooks/useWindowDimensions";
 import useCursorPosition from "@/hooks/useCursorPosition";
 import BoardControls from "../Controls/Board";
 import useLoadingState from "@/hooks/useLoading";
+import { pusherClient } from "@/pusher/client";
 
 const Board = ({ boardId }: BoardProps) => {
   const { windowWidth, windowHeight } = useWindowDimensions();
@@ -45,6 +46,28 @@ const Board = ({ boardId }: BoardProps) => {
   const tool = useAppSelector((state) => selectTool(state));
   const color = useAppSelector((state) => selectColor(state));
   const strokeWidth = useAppSelector((state) => selectStrokeWidth(state));
+
+  // Pusher.logToConsole = true; // for debugging purposes
+
+  useEffect(() => {
+    // subscribe the current room to listen for pusher events.
+    pusherClient.subscribe(boardId);
+
+    // when an "incoming-message" event is triggered
+    // (shown in the previous code block)
+    // make sure to update the messages state in real-time for all users.
+    pusherClient.bind(CHANNELS.LINE_DRAWING, (line: LineConfigCustom) => {
+      dispatch(appendLine(line));
+    });
+    pusherClient.bind(CHANNELS.BOARD_CLEARED, (_: any) => {
+      dispatch(clearLines());
+    });
+
+    // unsubscribe on component unmount.
+    return () => {
+      pusherClient.unsubscribe(boardId);
+    };
+  });
 
   const handleMouseDown = (e: KonvaEventObject<MouseEvent>) => {
     isDrawing.current = true;
@@ -85,18 +108,13 @@ const Board = ({ boardId }: BoardProps) => {
     dispatch(clearNewLines());
   };
 
-  const handleClearStage = () => {
+  const handleClearStage = async () => {
     const layer = layerRef.current;
     if (layer) {
       // Remove all children (shapes) from the layer
+      deleteLines(boardId, lines);
       layer.destroyChildren();
       layer.batchDraw();
-
-      const deleteLinePromises = lines.map((line) =>
-        deleteLine(line.id as string)
-      );
-      Promise.allSettled(deleteLinePromises);
-
       dispatch(clearLines());
     }
   };
