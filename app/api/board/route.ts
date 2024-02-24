@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   if (!board)
     NextResponse.json({ message: "Failed to create board" }, { status: 500 });
 
-  pusherServer.trigger("APP", CHANNELS.BOARD_CREATED, board);
+  // pusherServer.trigger("APP", CHANNELS.BOARD_CREATED, board);
 
   return NextResponse.json(board, { status: 201 });
 }
