@@ -16,8 +16,6 @@ export async function POST(
   const { rectangle }: { rectangle: RectConfig } = await req.json();
   const { boardId } = params;
 
-  if (!rectangle) return { status: 400, body: { message: "Invalid request" } };
-
   const newRectangle: Rectangle = await prisma.rectangle.create({
     data: {
       boardId,

@@ -2,6 +2,7 @@ import { LineConfigCustom } from "@/components/Organisms/Board/types";
 import { SHAPES, TOOLS } from "@/constants";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { CircleConfig } from "konva/lib/shapes/Circle";
 import { RectConfig } from "konva/lib/shapes/Rect";
 
 export interface BoardState {
@@ -14,6 +15,8 @@ export interface BoardState {
   cursorPosition: { x: number; y: number };
   rectangles: RectConfig[];
   newRectangles: RectConfig[];
+  circles: CircleConfig[];
+  newCircles: CircleConfig[];
 }
 
 const initialState: BoardState = {
@@ -26,6 +29,8 @@ const initialState: BoardState = {
   cursorPosition: { x: -20, y: -20 },
   rectangles: [],
   newRectangles: [],
+  circles: [],
+  newCircles: [],
 };
 
 export const boardSlice = createSlice({
