@@ -18,7 +18,7 @@ const HomePage = () => {
           </div>
         }
       >
-        <BoardFormContainer />
+        {/* <BoardFormContainer /> */}
       </Suspense>
     </section>
   );
